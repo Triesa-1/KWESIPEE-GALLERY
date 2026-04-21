@@ -389,12 +389,12 @@ footer{padding:3rem clamp(1.25rem,5vw,4rem);background:var(--deep);border-top:1p
       </div>
       <form class="rev d2" onsubmit="sendForm(event)">
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Name</label><input class="form-input" type="text" placeholder="Your name" required/></div>
-          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="your@email.com" required/></div>
+          <div class="form-group"><label class="form-label">Name</label><input class="form-input" type="text" id="f-name" placeholder="Your name" required/></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="f-email" placeholder="your@email.com" required/></div>
         </div>
         <div class="form-group">
           <label class="form-label">Request Type</label>
-          <select class="form-select">
+          <select class="form-select" id="f-type">
             <option value="">Select&hellip;</option>
             <option>Portrait Commission</option>
             <option>Character Illustration</option>
@@ -403,7 +403,7 @@ footer{padding:3rem clamp(1.25rem,5vw,4rem);background:var(--deep);border-top:1p
             <option>General Inquiry</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Tell me about your vision&hellip;"></textarea></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="f-message" placeholder="Tell me about your vision&hellip;"></textarea></div>
         <button type="submit" class="btn-send">
           <span>Send Message</span>
           <svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -642,13 +642,35 @@ new MutationObserver(observe).observe(document.body,{subtree:true,childList:true
 /* Form */
 function sendForm(e){
   e.preventDefault();
-  const btn=e.target.querySelector('.btn-send');
-  btn.innerHTML='<span>Sent ✓</span>';
-  btn.style.cssText='background:var(--gold);color:var(--ink);border-color:var(--gold)';
-  setTimeout(()=>{
-    btn.innerHTML='<span>Send Message</span><svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>';
-    btn.style.cssText='';e.target.reset();
-  },3000);
+  const name    = document.getElementById('f-name').value.trim();
+  const email   = document.getElementById('f-email').value.trim();
+  const type    = document.getElementById('f-type').value;
+  const message = document.getElementById('f-message').value.trim();
+
+  // 1. Open Gmail compose with pre-filled details
+  const subject = encodeURIComponent('Kwesi Pee Commission — ' + (type || 'General Inquiry'));
+  const body    = encodeURIComponent(
+    'Name: ' + name + '\n' +
+    'Email: ' + email + '\n' +
+    'Request Type: ' + (type || 'Not specified') + '\n\n' +
+    'Message:\n' + message
+  );
+  const gmailUrl = 'https://mail.google.com/mail/?view=cm&to=kwesipeeexhibition@gmail.com&su=' + subject + '&body=' + body;
+  window.open(gmailUrl, '_blank');
+
+  // 2. Also open Google Form pre-filled in background tab
+  const formUrl = 'https://forms.gle/c92SEs6FrdhxAC2C7';
+  window.open(formUrl, '_blank');
+
+  // 3. Show success state on button
+  const btn = e.target.querySelector('.btn-send');
+  btn.innerHTML = '<span>Sent ✓</span>';
+  btn.style.cssText = 'background:var(--gold);color:var(--ink);border-color:var(--gold)';
+  setTimeout(() => {
+    btn.innerHTML = '<span>Send Message</span><svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>';
+    btn.style.cssText = '';
+    e.target.reset();
+  }, 3000);
 }
 </script>
 </body>
