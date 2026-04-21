@@ -642,35 +642,53 @@ new MutationObserver(observe).observe(document.body,{subtree:true,childList:true
 /* Form */
 function sendForm(e){
   e.preventDefault();
-  const name    = document.getElementById('f-name').value.trim();
-  const email   = document.getElementById('f-email').value.trim();
-  const type    = document.getElementById('f-type').value;
-  const message = document.getElementById('f-message').value.trim();
+  const btn  = e.target.querySelector('.btn-send');
+  const data = {
+    name:    document.getElementById('f-name').value.trim(),
+    email:   document.getElementById('f-email').value.trim(),
+    type:    document.getElementById('f-type').value,
+    message: document.getElementById('f-message').value.trim()
+  };
 
-  // 1. Open Gmail compose with pre-filled details
-  const subject = encodeURIComponent('Kwesi Pee Commission — ' + (type || 'General Inquiry'));
-  const body    = encodeURIComponent(
-    'Name: ' + name + '\n' +
-    'Email: ' + email + '\n' +
-    'Request Type: ' + (type || 'Not specified') + '\n\n' +
-    'Message:\n' + message
-  );
-  const gmailUrl = 'https://mail.google.com/mail/?view=cm&to=kwesipeeexhibition@gmail.com&su=' + subject + '&body=' + body;
-  window.open(gmailUrl, '_blank');
+  // Show sending state
+  btn.innerHTML = '<span>Sending&hellip;</span>';
+  btn.style.cssText = 'opacity:.7;pointer-events:none';
 
-  // 2. Also open Google Form pre-filled in background tab
-  const formUrl = 'https://forms.gle/c92SEs6FrdhxAC2C7';
-  window.open(formUrl, '_blank');
-
-  // 3. Show success state on button
-  const btn = e.target.querySelector('.btn-send');
-  btn.innerHTML = '<span>Sent ✓</span>';
-  btn.style.cssText = 'background:var(--gold);color:var(--ink);border-color:var(--gold)';
-  setTimeout(() => {
-    btn.innerHTML = '<span>Send Message</span><svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>';
-    btn.style.cssText = '';
-    e.target.reset();
-  }, 3000);
+  // Submit to Formspree — delivers directly to kwesipeeexhibition@gmail.com
+  fetch('https://formspree.io/f/xreryppo', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+    body:    JSON.stringify({
+      name:         data.name,
+      email:        data.email,
+      _replyto:     data.email,
+      request_type: data.type,
+      message:      data.message
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.ok || res.next) {
+      // Success
+      btn.innerHTML = '<span>Message Sent ✓</span>';
+      btn.style.cssText = 'background:var(--gold);color:var(--ink);border-color:var(--gold);pointer-events:none';
+      e.target.reset();
+      setTimeout(() => {
+        btn.innerHTML = '<span>Send Message</span><svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>';
+        btn.style.cssText = '';
+      }, 4000);
+    } else {
+      throw new Error('Submission failed');
+    }
+  })
+  .catch(() => {
+    btn.innerHTML = '<span>Failed — Try Again</span>';
+    btn.style.cssText = 'border-color:#8b3a3a;color:#8b3a3a';
+    setTimeout(() => {
+      btn.innerHTML = '<span>Send Message</span><svg width="18" height="9" viewBox="0 0 18 9" fill="none"><path d="M0 4.5h16M11 1l5 3.5-5 3.5" stroke="currentColor" stroke-width="1.2"/></svg>';
+      btn.style.cssText = '';
+    }, 3000);
+  });
 }
 </script>
 </body>
